@@ -1,0 +1,24 @@
+metric: COCO
+#80 ,not contain background
+# error and fix：The shape [13] in pretrained weight solov2_head.bbox_head.solo_cate.bias is unmatched with the shape [8] in model solov2_head.bbox_head.solo_cate.bias.
+num_classes: 14
+
+# Train2017Dataset
+TrainDataset:
+  !COCODataSet
+    image_dir: train2017
+    anno_path: annotations/annotations_train.json
+    dataset_dir: dataset/glass_vessel_detection_14_2174_242
+    data_fields: ['image', 'gt_bbox', 'gt_class', 'gt_poly', 'is_crowd']
+
+EvalDataset:
+  !COCODataSet
+    image_dir: val2017
+    anno_path: annotations/annotations_val.json
+    dataset_dir: dataset/glass_vessel_detection_14_2174_242
+
+TestDataset:
+  !ImageFolder
+    image_dir: val2017
+    anno_path: annotations/annotations_val.json
+    dataset_dir: dataset/glass_vessel_detection_14_2174_242

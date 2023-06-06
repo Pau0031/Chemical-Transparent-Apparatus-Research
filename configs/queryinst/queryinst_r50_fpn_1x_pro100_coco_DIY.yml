@@ -1,0 +1,49 @@
+_BASE_: [
+  '../datasets/coco_instance_DIY.yml',
+  '../runtime.yml',
+  '_base_/optimizer_1x.yml',
+  '_base_/queryinst_r50_fpn.yml',
+  '_base_/queryinst_reader.yml',
+]
+
+epoch: 36
+LearningRate:
+  base_lr: 0.00085
+  schedulers:
+  - !PiecewiseDecay
+    gamma: 0.1
+    milestones: [27, 33]
+  - !LinearWarmup
+    start_factor: 0.001
+    steps: 1000
+
+log_iter: 50
+find_unused_parameters: true
+
+pretrain_weights: https://paddledet.bj.bcebos.com/models/pretrained/ResNet50_cos_pretrained.pdparams
+weights: output/queryinst_r50_fpn_1x_pro100_coco_DIY/model_final.pdparams
+
+EmbeddingRPNHead:
+  num_proposals: 300
+
+QueryInstPostProcess:
+  num_proposals: 300
+
+TrainReader:
+  sample_transforms:
+  - Decode: {}
+  - Poly2Mask: {del_poly: True}
+  - Resize: {interp: 1, target_size: [800, 1333], keep_ratio: True}
+  - RandomFlip: {prob: 0.5}
+  - NormalizeImage: {is_scale: true, mean: [0.485,0.456,0.406], std: [0.229, 0.224,0.225]}
+  - Permute: {}
+  batch_transforms:
+  - PadBatch: {pad_to_stride: 32}
+  - Gt2SparseTarget: {}
+  batch_size: 2
+  shuffle: true
+  drop_last: true
+  collate_batch: false
+  use_shared_memory: true
+
+worker_num: 2

@@ -1,0 +1,49 @@
+architecture: TransSolo
+pretrain_weights: https://paddledet.bj.bcebos.com/models/pretrained/Res2Net50_vd_26w_4s_pretrained.pdparams
+
+TransSolo:
+  backbone: Res2Net
+  neck: TEM
+  solov2_head: TransSOLOv2Head
+  mask_head: TransMaskHead
+
+Res2Net:
+  # index 0 stands for res2
+  depth: 50
+  width: 26
+  scales: 4
+  norm_type: bn
+  freeze_at: 0
+  return_idx: [1,2,3]
+  num_stages: 4
+  variant: d
+
+TEM:
+  out_channel: 64
+  cascade_attentions: True
+  boundary_learn: True
+
+TransSOLOv2Head:
+  seg_feat_channels: 512 # 512 require high computing cost but more accuracy
+  stacked_convs: 4
+  num_grids: [40, 24, 12] # [40, 36, 24, 16, 12] for conv kernels
+  segm_strides: [8, 16, 32]  # the threshold among each sum_masks
+  kernel_out_channels: 256
+  solov2_loss: TransSOLOv2Loss
+  mask_nms: MaskMatrixNMS
+
+TransMaskHead:
+  mid_channels: 128
+  out_channels: 256
+  start_level: 0
+  end_level: 2
+  boundary_learn: True
+
+TransSOLOv2Loss:
+  ins_loss_weight: 3.0
+  focal_loss_gamma: 2.0
+  focal_loss_alpha: 0.25
+
+MaskMatrixNMS:
+  pre_nms_top_n: 500
+  post_nms_top_n: 100

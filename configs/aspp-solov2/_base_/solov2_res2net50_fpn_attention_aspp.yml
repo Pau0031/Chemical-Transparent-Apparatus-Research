@@ -1,0 +1,56 @@
+architecture: SOLOv2_ASPP
+pretrain_weights: https://paddledet.bj.bcebos.com/models/pretrained/Res2Net50_vd_26w_4s_pretrained.pdparams
+
+SOLOv2_ASPP:
+  backbone: Res2Net
+  neck: FPN
+  # please check ppdet/modeling/necks/myncd.py if using attention
+  aspp: MYASPP
+  ncd: MYNECK
+  solov2_head: SOLOv2Head
+  mask_head: SOLOv2MaskHead
+
+Res2Net:
+  # index 0 stands for res2
+  depth: 50
+  width: 26
+  scales: 4
+  norm_type: bn
+  freeze_at: 0
+  return_idx: [0,1,2,3]
+  num_stages: 4
+  variant: d
+
+FPN:
+  out_channel: 256
+
+MYASPP:
+  in_channels: 1024
+  out_channels: 256
+
+MYNECK:
+  is_reduce_dim: False
+  middle_dim: 256
+
+SOLOv2Head:
+  seg_feat_channels: 512 # 512 require high computing cost but more accuracy
+  stacked_convs: 4
+  num_grids: [40, 36, 24, 16, 12] # [40, 36, 24, 16, 12]
+  kernel_out_channels: 256
+  solov2_loss: SOLOv2Loss
+  mask_nms: MaskMatrixNMS
+
+SOLOv2MaskHead:
+  mid_channels: 128
+  out_channels: 256
+  start_level: 0
+  end_level: 3
+
+SOLOv2Loss:
+  ins_loss_weight: 3.0
+  focal_loss_gamma: 2.0
+  focal_loss_alpha: 0.25
+
+MaskMatrixNMS:
+  pre_nms_top_n: 500
+  post_nms_top_n: 100
